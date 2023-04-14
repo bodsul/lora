@@ -170,7 +170,7 @@ class PivotalTuningDatasetCapation(Dataset):
             self.instance_images_path = list(set(possibily_src_images))
 
             self.captions = [
-                os.path.splitext(f)[0].split('_')[0] for f in self.instance_images_path
+                os.path.splitext(f.split("/")[-1])[0].split('_')[0] for f in self.instance_images_path
             ]
 
             for f in self.instance_images_path:
@@ -178,7 +178,6 @@ class PivotalTuningDatasetCapation(Dataset):
                 mask_path = f"{instance_data_root}/{idx}.mask.png"
 
                 if Path(mask_path).exists():
-                    self.instance_images_path.append(f)
                     self.mask_path.append(mask_path)
                 else:
                     print(f"Mask not found for {f}")
