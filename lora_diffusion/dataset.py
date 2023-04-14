@@ -7,6 +7,7 @@ from torch import zeros_like
 from torch.utils.data import Dataset
 from torchvision import transforms
 import glob
+import os
 from .preprocess_files import face_mask_google_mediapipe
 
 OBJECT_TEMPLATE = [
@@ -155,9 +156,25 @@ class PivotalTuningDatasetCapation(Dataset):
 
         # Prepare the instance images
         if use_mask_captioned_data:
-            src_imgs = glob.glob(str(instance_data_root) + "/*src.jpg")
-            for f in src_imgs:
-                idx = int(str(Path(f).stem).split(".")[0])
+            possibily_src_images = (
+                glob.glob(str(instance_data_root) + "/*.jpg")
+                + glob.glob(str(instance_data_root) + "/*.png")
+                + glob.glob(str(instance_data_root) + "/*.jpeg")
+            )
+            possibily_src_images = (
+                set(possibily_src_images)
+                - set(glob.glob(str(instance_data_root) + "/*mask.png"))
+                - set([str(instance_data_root) + "/caption.txt"])
+            )
+
+            self.instance_images_path = list(set(possibily_src_images))
+
+            self.captions = [
+                os.path.splitext(f)[0].split('_')[0] for f in self.instance_images_path
+            ]
+
+            for f in self.instance_images_path:
+                idx = os.path.splitext(f)[0].split('_')[1]
                 mask_path = f"{instance_data_root}/{idx}.mask.png"
 
                 if Path(mask_path).exists():
@@ -165,8 +182,11 @@ class PivotalTuningDatasetCapation(Dataset):
                     self.mask_path.append(mask_path)
                 else:
                     print(f"Mask not found for {f}")
-
-            self.captions = open(f"{instance_data_root}/caption.txt").readlines()
+            
+            # self.captions = open(f"{instance_data_root}/caption.txt").readlines()
+            self.captions = [
+                x.split("/")[-1].split(".")[0] for x in self.instance_images_path
+            ]
 
         else:
             possibily_src_images = (
@@ -181,9 +201,6 @@ class PivotalTuningDatasetCapation(Dataset):
             )
 
             self.instance_images_path = list(set(possibily_src_images))
-            self.captions = [
-                x.split("/")[-1].split(".")[0] for x in self.instance_images_path
-            ]
 
         assert (
             len(self.instance_images_path) > 0
