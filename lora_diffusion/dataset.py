@@ -183,9 +183,9 @@ class PivotalTuningDatasetCapation(Dataset):
                     print(f"Mask not found for {f}")
             
             # self.captions = open(f"{instance_data_root}/caption.txt").readlines()
-            self.captions = [
-                x.split("/")[-1].split(".")[0] for x in self.instance_images_path
-            ]
+            # self.captions = [
+            #     x.split("/")[-1].split(".")[0] for x in self.instance_images_path
+            # ]
 
         else:
             possibily_src_images = (
